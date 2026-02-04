@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<link rel="stylesheet" href="index.css">
+  <title>ImmatureGenius — Calm Script Builder</title>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- Password Gate -->
+    <div id="gate" class="gateWrap">
+      <div class="gateCard">
+        <div class="pill">immaturegenius.com</div>
+        <h1>Calm Script Builder</h1>
+        <p>Enter the access password you received after purchase.</p>
+        <div class="gateRow">
+          <input id="pw" type="password" placeholder="Password…" autocomplete="off" />
+          <button id="unlockBtn">Unlock</button>
+        </div>
+        <div id="gateErr" class="err">Wrong password.</div>
+        <div class="tiny mono">Tip: you can bookmark this page after unlocking.</div>
+      </div>
+    </div>
+
+    <!-- App -->
+    <div id="app" class="gate">
+      <div class="top">
+        <div class="brand">
+          <div class="name">ImmatureGenius</div>
+          <div class="title">Calm Script Builder</div>
+        </div>
+        <div class="pill">v1 • dark mode</div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="hdr">
+            <div>
+              <h2>Input</h2>
+              <p>Paste rough notes. The tool turns them into a calm hook, outline, and opening script.</p>
+            </div>
+          </div>
+          <div class="body">
+            <label for="notes">Your messy idea / notes</label>
+            <textarea id="notes" placeholder="Paste your notes here… bullet points, half-thoughts, whatever."></textarea>
+
+            <div class="row">
+              <div style="flex:1 1 180px;">
+                <label for="length">Target length</label>
+                <select id="length">
+                  <option value="4-6">4–6 minutes</option>
+                  <option value="8-12" selected>8–12 minutes</option>
+                  <option value="15-20">15–20 minutes</option>
+                </select>
+              </div>
+
+              <div style="flex:1 1 180px;">
+                <label for="audience">Audience</label>
+                <select id="audience">
+                  <option value="general" selected>General</option>
+                  <option value="beginners">Beginners</option>
+                  <option value="developers">Developers</option>
+                </select>
+              </div>
+
+              <div style="flex:1 1 180px;">
+                <label for="tone">Tone</label>
+                <select id="tone">
+                  <option value="calm" selected>Calm + reflective</option>
+                  <option value="skeptical">Skeptical + analytical</option>
+                  <option value="warm">Warm + encouraging</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btnrow">
+              <button id="genBtn">Generate</button>
+              <button id="copyBtn" class="ghost" disabled>Copy output</button>
+              <span id="status" class="status"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hdr">
+            <div>
+              <h2>Output</h2>
+              <p>Titles, premise, quiet hook, timestamped outline, and a 60–90s script starter.</p>
+            </div>
+          </div>
+          <div class="body">
+            <div id="output" class="out"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script src="index.js"></script>
+</body>
+</html>
+ 
