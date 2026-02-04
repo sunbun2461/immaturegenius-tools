@@ -1,0 +1,307 @@
+    :root {
+    	--bg0: #070A12;
+    	--bg1: #0B1022;
+    	--card: #0E1730;
+    	--card2: #0B142B;
+    	--text: #E7ECFF;
+    	--muted: #A9B4D6;
+    	--muted2: #7D88B1;
+    	--line: rgba(255, 255, 255, .08);
+    	--glow1: #00E5FF;
+    	--glow2: #7C4DFF;
+    	--glow3: #00FFB2;
+    	--danger: #FF4D6D;
+    	--ok: #00FFB2;
+    	--btn: #121E3D;
+    	--shadow: 0 18px 60px rgba(0, 0, 0, .55);
+    	--radius: 18px;
+    	--mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    	--sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    * {
+    	box-sizing: border-box;
+    }
+
+    body {
+    	margin: 0;
+    	font-family: var(--sans);
+    	color: var(--text);
+    	background:
+    		radial-gradient(1200px 700px at 10% 10%, rgba(0, 229, 255, .12), transparent 60%),
+    		radial-gradient(900px 600px at 90% 20%, rgba(124, 77, 255, .14), transparent 55%),
+    		radial-gradient(900px 600px at 50% 90%, rgba(0, 255, 178, .09), transparent 60%),
+    		linear-gradient(180deg, var(--bg0), var(--bg1));
+    	min-height: 100vh;
+    }
+
+    .wrap {
+    	max-width: 1050px;
+    	margin: 0 auto;
+    	padding: 28px 18px 60px;
+    }
+
+    .top {
+    	display: flex;
+    	align-items: center;
+    	justify-content: space-between;
+    	gap: 16px;
+    	margin-bottom: 18px;
+    }
+
+    .brand {
+    	display: flex;
+    	flex-direction: column;
+    	gap: 6px;
+    }
+
+    .brand .name {
+    	font-size: 18px;
+    	letter-spacing: .5px;
+    	color: var(--muted);
+    }
+
+    .brand .title {
+    	font-size: 28px;
+    	font-weight: 800;
+    	line-height: 1.1;
+    	background: linear-gradient(90deg, var(--text), rgba(231, 236, 255, .65));
+    	-webkit-background-clip: text;
+    	background-clip: text;
+    	color: transparent;
+    }
+
+    .pill {
+    	font-family: var(--mono);
+    	font-size: 12px;
+    	padding: 8px 12px;
+    	border: 1px solid var(--line);
+    	border-radius: 999px;
+    	color: var(--muted);
+    	background: rgba(255, 255, 255, .03);
+    	box-shadow: 0 0 0 1px rgba(0, 229, 255, .08) inset;
+    	white-space: nowrap;
+    }
+
+    .grid {
+    	display: grid;
+    	grid-template-columns: 1.05fr .95fr;
+    	gap: 16px;
+    }
+
+    @media (max-width: 920px) {
+    	.grid {
+    		grid-template-columns: 1fr;
+    	}
+    }
+
+    .card {
+    	background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+    	border: 1px solid var(--line);
+    	border-radius: var(--radius);
+    	box-shadow: var(--shadow);
+    	overflow: hidden;
+    }
+
+    .card .hdr {
+    	padding: 16px 16px 0;
+    	display: flex;
+    	align-items: flex-start;
+    	justify-content: space-between;
+    	gap: 12px;
+    }
+
+    .card .hdr h2 {
+    	margin: 0;
+    	font-size: 16px;
+    	color: var(--text);
+    	letter-spacing: .2px;
+    }
+
+    .card .hdr p {
+    	margin: 6px 0 0;
+    	font-size: 13px;
+    	color: var(--muted2);
+    	line-height: 1.45;
+    }
+
+    .card .body {
+    	padding: 16px;
+    }
+
+    label {
+    	display: block;
+    	font-size: 12px;
+    	color: var(--muted);
+    	margin: 0 0 8px;
+    	letter-spacing: .3px;
+    }
+
+    textarea {
+    	width: 100%;
+    	min-height: 220px;
+    	resize: vertical;
+    	border-radius: 14px;
+    	border: 1px solid var(--line);
+    	background: rgba(0, 0, 0, .25);
+    	color: var(--text);
+    	padding: 12px 12px;
+    	outline: none;
+    	line-height: 1.45;
+    	box-shadow: 0 0 0 1px rgba(124, 77, 255, .08) inset;
+    }
+
+    textarea:focus {
+    	border-color: rgba(0, 229, 255, .35);
+    	box-shadow: 0 0 0 3px rgba(0, 229, 255, .12);
+    }
+
+    .row {
+    	display: flex;
+    	gap: 10px;
+    	flex-wrap: wrap;
+    	margin-top: 12px;
+    }
+
+    select {
+    	flex: 1 1 180px;
+    	border-radius: 12px;
+    	border: 1px solid var(--line);
+    	background: rgba(0, 0, 0, .25);
+    	color: var(--text);
+    	padding: 10px 10px;
+    	outline: none;
+    }
+
+    select:focus {
+    	border-color: rgba(124, 77, 255, .4);
+    	box-shadow: 0 0 0 3px rgba(124, 77, 255, .14);
+    }
+
+    .btnrow {
+    	display: flex;
+    	gap: 10px;
+    	align-items: center;
+    	margin-top: 14px;
+    	flex-wrap: wrap;
+    }
+
+    button {
+    	cursor: pointer;
+    	border: 1px solid var(--line);
+    	background: linear-gradient(180deg, rgba(0, 229, 255, .12), rgba(124, 77, 255, .10));
+    	color: var(--text);
+    	padding: 11px 14px;
+    	border-radius: 14px;
+    	font-weight: 700;
+    	letter-spacing: .2px;
+    	box-shadow: 0 0 0 1px rgba(0, 229, 255, .10) inset;
+    	transition: transform .06s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    button:hover {
+    	border-color: rgba(0, 229, 255, .35);
+    	box-shadow: 0 0 0 1px rgba(0, 229, 255, .14) inset, 0 10px 40px rgba(0, 0, 0, .35);
+    }
+
+    button:active {
+    	transform: translateY(1px);
+    }
+
+    button:disabled {
+    	opacity: .5;
+    	cursor: not-allowed;
+    }
+
+    .ghost {
+    	background: rgba(255, 255, 255, .03);
+    	font-weight: 650;
+    }
+
+    .status {
+    	font-family: var(--mono);
+    	font-size: 12px;
+    	color: var(--muted2);
+    }
+
+    .out {
+    	white-space: pre-wrap;
+    	font-family: var(--sans);
+    	line-height: 1.55;
+    	font-size: 14px;
+    	color: var(--text);
+    	border-radius: 14px;
+    	border: 1px solid var(--line);
+    	background: rgba(0, 0, 0, .22);
+    	padding: 14px 14px;
+    	min-height: 220px;
+    	box-shadow: 0 0 0 1px rgba(0, 255, 178, .06) inset;
+    }
+
+    .mono {
+    	font-family: var(--mono);
+    }
+
+    .gate {
+    	display: none;
+    }
+
+    .gateWrap {
+    	display: grid;
+    	place-items: center;
+    	min-height: calc(100vh - 80px);
+    }
+
+    .gateCard {
+    	width: min(520px, 100%);
+    	padding: 18px;
+    	border-radius: var(--radius);
+    	border: 1px solid var(--line);
+    	background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+    	box-shadow: var(--shadow);
+    }
+
+    .gateCard h1 {
+    	margin: 6px 0 10px;
+    	font-size: 22px;
+    	font-weight: 850;
+    }
+
+    .gateCard p {
+    	margin: 0 0 14px;
+    	color: var(--muted2);
+    	font-size: 13px;
+    	line-height: 1.5;
+    }
+
+    .gateRow {
+    	display: flex;
+    	gap: 10px;
+    	flex-wrap: wrap;
+    	align-items: center;
+    }
+
+    .gateRow input {
+    	flex: 1 1 260px;
+    	border-radius: 12px;
+    	border: 1px solid var(--line);
+    	background: rgba(0, 0, 0, .25);
+    	color: var(--text);
+    	padding: 10px 10px;
+    	outline: none;
+    	font-family: var(--mono);
+    }
+
+    .err {
+    	margin-top: 10px;
+    	color: var(--danger);
+    	font-size: 12px;
+    	font-family: var(--mono);
+    	display: none;
+    }
+
+    .tiny {
+    	margin-top: 10px;
+    	color: var(--muted2);
+    	font-size: 12px;
+    }
