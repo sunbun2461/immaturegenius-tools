@@ -21,5 +21,8 @@
   "homepage": "https://github.com/sunbun2461/immaturegenius-tools#readme",
   "devDependencies": {
     "netlify-cli": "^23.15.1"
+  },
+  "dependencies": {
+    "stripe": "^18.2.1"
   }
 }

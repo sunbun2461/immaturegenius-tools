@@ -218,6 +218,17 @@
     	font-weight: 650;
     }
 
+    .pay {
+    	background: linear-gradient(180deg, rgba(255, 194, 0, .24), rgba(255, 132, 0, .16));
+    	border-color: rgba(255, 194, 0, .22);
+    	box-shadow: 0 0 0 1px rgba(255, 194, 0, .12) inset;
+    }
+
+    .pay:hover {
+    	border-color: rgba(255, 194, 0, .42);
+    	box-shadow: 0 0 0 1px rgba(255, 194, 0, .16) inset, 0 10px 40px rgba(0, 0, 0, .35);
+    }
+
     .status {
     	font-family: var(--mono);
     	font-size: 12px;

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="../index.css">
+  <title>ImmatureGenius — Download</title>
+  <style>
+    .successWrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 40px 18px 60px;
+    }
+
+    .successCard {
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      box-shadow: var(--shadow);
+    }
+
+    .successTitle {
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .successMsg {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .successLink {
+      margin-top: 16px;
+      display: none;
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .successLink.is-visible {
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="successWrap">
+    <div class="successCard">
+      <div class="pill">immaturegenius.com</div>
+      <h1 class="successTitle">Preparing your download...</h1>
+      <p id="status" class="successMsg">Verifying payment and building your file.</p>
+      <a id="fallbackLink" class="successLink" download="calm-script.md">Download didn't start? Click here.</a>
+    </div>
+  </div>
+
+  <script src="success.js"></script>
+</body>
+</html>

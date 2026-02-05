@@ -45,11 +45,13 @@ const audienceEl = document.getElementById("audience");
 const toneEl = document.getElementById("tone");
 const genBtn = document.getElementById("genBtn");
 const copyBtn = document.getElementById("copyBtn");
+const payBtn = document.getElementById("payBtn");
 const outEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
 const loaderEl = document.getElementById("loader");
 const loaderMsgEl = document.getElementById("loaderMsg");
 const loaderBarEl = document.getElementById("loaderBar");
+const LAST_OUTPUT_KEY = "calmScriptBuilder:lastOutput";
 
 function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -181,6 +183,7 @@ async function generate() {
 	genBtn.disabled = true;
 	genBtn.textContent = "Generating...";
 	copyBtn.disabled = true;
+	payBtn.disabled = true;
 	outEl.textContent = "";
 	setStatus("");
 	startLoader();
@@ -211,10 +214,12 @@ async function generate() {
 
 		outEl.textContent = data.text || "(no output)";
 		copyBtn.disabled = !data.text;
+		payBtn.disabled = !data.text;
 		setStatus("done");
 		await stopLoader(true);
 	} catch (err) {
 		outEl.textContent = "Error: " + (err?.message || String(err));
+		payBtn.disabled = true;
 		setStatus("error");
 		await stopLoader(false);
 	} finally {
@@ -263,5 +268,58 @@ copyBtn.addEventListener("click", async () => {
 	} catch {
 		setStatus("copy failed");
 		setTimeout(() => setStatus(""), 900);
+	}
+});
+
+function getOutputForCheckout() {
+	const text = (outEl.textContent || "").trim();
+	if (!text || text === "(no output)" || text.startsWith("Error:")) {
+		return "";
+	}
+	return text;
+}
+
+payBtn.addEventListener("click", async () => {
+	const text = getOutputForCheckout();
+	if (!text) {
+		setStatus("generate a script first");
+		setTimeout(() => setStatus(""), 1200);
+		return;
+	}
+
+	localStorage.setItem(LAST_OUTPUT_KEY, text);
+	payBtn.disabled = true;
+	const originalLabel = payBtn.textContent;
+	payBtn.textContent = "Redirecting...";
+
+	try {
+		const res = await fetch("/.netlify/functions/createCheckoutSession", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({})
+		});
+
+		const raw = await res.text();
+		let data;
+		try {
+			data = raw ? JSON.parse(raw) : null;
+		} catch {
+			data = null;
+		}
+		if (!data || typeof data !== "object") data = {};
+
+		if (!res.ok || !data.url) {
+			const rawError = raw ? raw.trim() : "";
+			const errorMessage = data?.error || rawError || `Checkout error (${res.status})`;
+			throw new Error(errorMessage);
+		}
+
+		window.location.href = data.url;
+	} catch (err) {
+		setStatus("payment failed");
+		outEl.textContent = "Error: " + (err?.message || String(err));
+		payBtn.disabled = false;
+		payBtn.textContent = originalLabel;
+		setTimeout(() => setStatus(""), 1600);
 	}
 });
