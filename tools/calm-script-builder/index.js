@@ -47,8 +47,79 @@ const genBtn = document.getElementById("genBtn");
 const copyBtn = document.getElementById("copyBtn");
 const outEl = document.getElementById("output");
 const statusEl = document.getElementById("status");
+const loaderEl = document.getElementById("loader");
+const loaderMsgEl = document.getElementById("loaderMsg");
+const loaderBarEl = document.getElementById("loaderBar");
 
 function setStatus(msg) { statusEl.textContent = msg || ""; }
+
+const LOADING_MESSAGES = [
+	"thinking…",
+	"organizing your ideas…",
+	"turning chaos into calm…",
+	"removing clickbait impulses…",
+	"making it sound like you…"
+];
+
+let isGenerating = false;
+let messageTimer = null;
+let progressTimer = null;
+let progressValue = 0;
+let messageIndex = 0;
+
+function setLoaderProgress(percent) {
+	progressValue = Math.max(0, Math.min(100, percent));
+	loaderBarEl.style.width = `${progressValue}%`;
+}
+
+function clearLoaderTimers() {
+	if (messageTimer) {
+		clearInterval(messageTimer);
+		messageTimer = null;
+	}
+	if (progressTimer) {
+		clearInterval(progressTimer);
+		progressTimer = null;
+	}
+}
+
+function startLoader() {
+	clearLoaderTimers();
+	messageIndex = 0;
+	setLoaderProgress(0);
+	loaderMsgEl.textContent = LOADING_MESSAGES[messageIndex];
+	messageIndex += 1;
+	loaderEl.classList.add("is-on");
+	loaderEl.setAttribute("aria-hidden", "false");
+	outEl.classList.add("is-loading");
+
+	messageTimer = setInterval(() => {
+		loaderMsgEl.textContent = LOADING_MESSAGES[messageIndex % LOADING_MESSAGES.length];
+		messageIndex += 1;
+	}, 1500);
+
+	progressTimer = setInterval(() => {
+		const remaining = 90 - progressValue;
+		if (remaining <= 0.3) {
+			setLoaderProgress(90);
+			return;
+		}
+		const step = Math.max(0.45, remaining * 0.08);
+		setLoaderProgress(Math.min(90, progressValue + step));
+	}, 180);
+}
+
+async function stopLoader(success) {
+	clearLoaderTimers();
+	if (success) {
+		setLoaderProgress(100);
+		await new Promise((resolve) => setTimeout(resolve, 220));
+	}
+	loaderEl.classList.remove("is-on");
+	loaderEl.setAttribute("aria-hidden", "true");
+	outEl.classList.remove("is-loading");
+	setLoaderProgress(0);
+}
 
 const PROMPT_TEMPLATE = (notes, opts) => `
 You are a calm, thoughtful YouTube script coach. Turn messy notes into a clear, reflective video structure with a quiet, grounded tone. Avoid hype, clickbait, or "SMASH LIKE" energy. Be concise, practical, and emotionally steady. Do not invent facts—if something is uncertain, phrase it as opinion or a question.
@@ -92,6 +163,8 @@ OUTPUT FORMAT (follow exactly):
 `.trim();
 
 async function generate() {
+	if (isGenerating) return;
+
 	const notes = (notesEl.value || "").trim();
 	if (!notes) {
 		outEl.textContent = "Paste some notes first.";
@@ -104,10 +177,13 @@ async function generate() {
 		tone: toneEl.value
 	};
 
+	isGenerating = true;
 	genBtn.disabled = true;
+	genBtn.textContent = "Generating...";
 	copyBtn.disabled = true;
 	outEl.textContent = "";
-	setStatus("thinking…");
+	setStatus("");
+	startLoader();
 
 	try {
 		const res = await fetch("/.netlify/functions/generate", {
@@ -118,29 +194,70 @@ async function generate() {
 			})
 		});
 
+		const raw = await res.text();
+		let data;
+		try {
+			data = raw ? JSON.parse(raw) : null;
+		} catch {
+			data = null;
+		}
+		if (!data || typeof data !== "object") data = {};
+
 		if (!res.ok) {
-			const txt = await res.text();
-			throw new Error(`Server error (${res.status}): ${txt}`);
+			const rawError = raw ? raw.trim() : "";
+			const errorMessage = data?.error || rawError || `Server error (${res.status})`;
+			throw new Error(errorMessage);
 		}
 
-		const data = await res.json();
 		outEl.textContent = data.text || "(no output)";
-		copyBtn.disabled = false;
+		copyBtn.disabled = !data.text;
 		setStatus("done");
+		await stopLoader(true);
 	} catch (err) {
 		outEl.textContent = "Error: " + (err?.message || String(err));
 		setStatus("error");
+		await stopLoader(false);
 	} finally {
+		isGenerating = false;
 		genBtn.disabled = false;
+		genBtn.textContent = "Generate";
 		setTimeout(() => setStatus(""), 1200);
 	}
 }
 
 genBtn.addEventListener("click", generate);
 
+async function copyText(text) {
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		await navigator.clipboard.writeText(text);
+		return;
+	}
+
+	const helper = document.createElement("textarea");
+	helper.value = text;
+	helper.setAttribute("readonly", "true");
+	helper.style.position = "fixed";
+	helper.style.opacity = "0";
+	document.body.appendChild(helper);
+	helper.focus();
+	helper.select();
+	const ok = document.execCommand("copy");
+	document.body.removeChild(helper);
+	if (!ok) {
+		throw new Error("copy failed");
+	}
+}
+
 copyBtn.addEventListener("click", async () => {
+	const text = (outEl.textContent || "").trim();
+	if (!text || text === "(no output)") {
+		setStatus("nothing to copy");
+		setTimeout(() => setStatus(""), 900);
+		return;
+	}
+
 	try {
-		await navigator.clipboard.writeText(outEl.textContent || "");
+		await copyText(text);
 		setStatus("copied");
 		setTimeout(() => setStatus(""), 900);
 	} catch {

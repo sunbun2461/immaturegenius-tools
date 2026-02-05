@@ -1,0 +1,25 @@
+{
+  "name": "immaturegenius-tools",
+  "version": "1.0.0",
+  "description": "A collection of small, opinionated AI-powered tools focused on clarity over hype. ImmatureGenius Tools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "netlify dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sunbun2461/immaturegenius-tools.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sunbun2461/immaturegenius-tools/issues"
+  },
+  "homepage": "https://github.com/sunbun2461/immaturegenius-tools#readme",
+  "devDependencies": {
+    "netlify-cli": "^23.15.1"
+  }
+}
