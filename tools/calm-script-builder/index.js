@@ -47,11 +47,12 @@ const genBtn = document.getElementById("genBtn");
 const copyBtn = document.getElementById("copyBtn");
 const payBtn = document.getElementById("payBtn");
 const outEl = document.getElementById("output");
+const previewBadgeEl = document.getElementById("previewBadge");
 const statusEl = document.getElementById("status");
 const loaderEl = document.getElementById("loader");
 const loaderMsgEl = document.getElementById("loaderMsg");
 const loaderBarEl = document.getElementById("loaderBar");
-const LAST_OUTPUT_KEY = "calmScriptBuilder:lastOutput";
+const LAST_INPUTS_KEY = "calmScriptBuilder:lastInputs";
 
 function setStatus(msg) { statusEl.textContent = msg || ""; }
 
@@ -68,6 +69,26 @@ let messageTimer = null;
 let progressTimer = null;
 let progressValue = 0;
 let messageIndex = 0;
+
+copyBtn.style.display = "none";
+copyBtn.disabled = true;
+
+function setPreviewLock(enabled) {
+	if (enabled) {
+		outEl.classList.add("preview-locked");
+		if (previewBadgeEl) previewBadgeEl.classList.add("is-visible");
+		return;
+	}
+	outEl.classList.remove("preview-locked");
+	if (previewBadgeEl) previewBadgeEl.classList.remove("is-visible");
+}
+
+function truncatePreview(text, maxChars = 720) {
+	const clean = (text || "").trim();
+	if (!clean) return "";
+	if (clean.length <= maxChars) return clean;
+	return `${clean.slice(0, maxChars).trimEnd()}...`;
+}
 
 function setLoaderProgress(percent) {
 	progressValue = Math.max(0, Math.min(100, percent));
@@ -123,47 +144,6 @@ async function stopLoader(success) {
 	setLoaderProgress(0);
 }
 
-const PROMPT_TEMPLATE = (notes, opts) => `
-You are a calm, thoughtful YouTube script coach. Turn messy notes into a clear, reflective video structure with a quiet, grounded tone. Avoid hype, clickbait, or "SMASH LIKE" energy. Be concise, practical, and emotionally steady. Do not invent facts—if something is uncertain, phrase it as opinion or a question.
-
-Constraints:
-- Target length: ${opts.length} minutes
-- Audience: ${opts.audience}
-- Tone: ${opts.tone}
-
-User notes:
-${notes}
-
-OUTPUT FORMAT (follow exactly):
-
-### 1) Title options (5)
-- Write 5 titles that are clear and intriguing without being clickbait.
-
-### 2) One-sentence premise
-- Summarize what this video is really about in one sentence.
-
-### 3) Quiet hook (10–20 seconds)
-- Write a short opening that feels like a thoughtful person talking to one viewer. No hype.
-
-### 4) Structure (outline with timestamps)
-- Provide a simple outline with 5–8 sections.
-- Include rough timestamps for a ${opts.length} minute video.
-- Each section should have 2–4 bullet points of what to say.
-
-### 5) Script starter (first 60–90 seconds)
-- Write the opening minute as actual spoken script, matching the tone.
-
-### 6) Key lines to reuse (5)
-- Give 5 strong lines or phrases the creator can reuse throughout the video.
-
-### 7) Soft close + CTA (10–15 seconds)
-- A calm closing thought + a non-pushy CTA.
-
-### 8) "Tone check"
-- 3 bullets: what to avoid saying (too harsh, too cringe, too vague).
-- 3 bullets: what to lean into (clarity, honesty, personal insight).
-`.trim();
-
 async function generate() {
 	if (isGenerating) return;
 
@@ -193,7 +173,11 @@ async function generate() {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				prompt: PROMPT_TEMPLATE(notes, opts)
+				prompt: notes,
+				tone: opts.tone,
+				audience: opts.audience,
+				length: opts.length,
+				mode: "preview"
 			})
 		});
 
@@ -212,14 +196,15 @@ async function generate() {
 			throw new Error(errorMessage);
 		}
 
-		outEl.textContent = data.text || "(no output)";
-		copyBtn.disabled = !data.text;
+		outEl.textContent = truncatePreview(data.text) || "(no output)";
 		payBtn.disabled = !data.text;
+		setPreviewLock(!!data.text);
 		setStatus("done");
 		await stopLoader(true);
 	} catch (err) {
 		outEl.textContent = "Error: " + (err?.message || String(err));
 		payBtn.disabled = true;
+		setPreviewLock(false);
 		setStatus("error");
 		await stopLoader(false);
 	} finally {
@@ -232,62 +217,19 @@ async function generate() {
 
 genBtn.addEventListener("click", generate);
 
-async function copyText(text) {
-	if (navigator.clipboard && navigator.clipboard.writeText) {
-		await navigator.clipboard.writeText(text);
-		return;
-	}
-
-	const helper = document.createElement("textarea");
-	helper.value = text;
-	helper.setAttribute("readonly", "true");
-	helper.style.position = "fixed";
-	helper.style.opacity = "0";
-	document.body.appendChild(helper);
-	helper.focus();
-	helper.select();
-	const ok = document.execCommand("copy");
-	document.body.removeChild(helper);
-	if (!ok) {
-		throw new Error("copy failed");
-	}
-}
-
-copyBtn.addEventListener("click", async () => {
-	const text = (outEl.textContent || "").trim();
-	if (!text || text === "(no output)") {
-		setStatus("nothing to copy");
-		setTimeout(() => setStatus(""), 900);
-		return;
-	}
-
-	try {
-		await copyText(text);
-		setStatus("copied");
-		setTimeout(() => setStatus(""), 900);
-	} catch {
-		setStatus("copy failed");
-		setTimeout(() => setStatus(""), 900);
-	}
-});
-
-function getOutputForCheckout() {
-	const text = (outEl.textContent || "").trim();
-	if (!text || text === "(no output)" || text.startsWith("Error:")) {
-		return "";
-	}
-	return text;
-}
-
-payBtn.addEventListener("click", async () => {
-	const text = getOutputForCheckout();
-	if (!text) {
+async function startCheckoutFlow() {
+	const notes = (notesEl.value || "").trim();
+	if (!notes) {
 		setStatus("generate a script first");
 		setTimeout(() => setStatus(""), 1200);
 		return;
 	}
-
-	localStorage.setItem(LAST_OUTPUT_KEY, text);
+	localStorage.setItem(LAST_INPUTS_KEY, JSON.stringify({
+		prompt: notes,
+		tone: toneEl.value,
+		audience: audienceEl.value,
+		length: lengthEl.value
+	}));
 	payBtn.disabled = true;
 	const originalLabel = payBtn.textContent;
 	payBtn.textContent = "Redirecting...";
@@ -322,4 +264,9 @@ payBtn.addEventListener("click", async () => {
 		payBtn.textContent = originalLabel;
 		setTimeout(() => setStatus(""), 1600);
 	}
-});
+}
+
+payBtn.addEventListener("click", startCheckoutFlow);
+if (previewBadgeEl) {
+	previewBadgeEl.addEventListener("click", startCheckoutFlow);
+}

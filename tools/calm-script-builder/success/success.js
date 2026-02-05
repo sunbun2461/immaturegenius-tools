@@ -1,4 +1,4 @@
-const LAST_OUTPUT_KEY = "calmScriptBuilder:lastOutput";
+const LAST_INPUTS_KEY = "calmScriptBuilder:lastInputs";
 const statusEl = document.getElementById("status");
 const fallbackLinkEl = document.getElementById("fallbackLink");
 
@@ -11,8 +11,23 @@ function getSessionId() {
 	return (params.get("session_id") || "").trim();
 }
 
-function getStoredOutput() {
-	return (localStorage.getItem(LAST_OUTPUT_KEY) || "").trim();
+function getStoredInputs() {
+	const raw = localStorage.getItem(LAST_INPUTS_KEY) || "";
+	if (!raw) return null;
+	try {
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== "object") return null;
+		const prompt = typeof parsed.prompt === "string" ? parsed.prompt.trim() : "";
+		if (!prompt) return null;
+		return {
+			prompt,
+			tone: typeof parsed.tone === "string" ? parsed.tone : "calm",
+			audience: typeof parsed.audience === "string" ? parsed.audience : "general",
+			length: typeof parsed.length === "string" ? parsed.length : "8-12"
+		};
+	} catch {
+		return null;
+	}
 }
 
 function toMarkdown(text) {
@@ -61,6 +76,35 @@ async function verifyPayment(sessionId) {
 	}
 }
 
+async function generateFullScript(inputs, sessionId) {
+	const res = await fetch("/.netlify/functions/generate", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			prompt: inputs.prompt,
+			tone: inputs.tone,
+			audience: inputs.audience,
+			length: inputs.length,
+			mode: "full",
+			session_id: sessionId
+		})
+	});
+
+	const raw = await res.text();
+	let data;
+	try {
+		data = raw ? JSON.parse(raw) : null;
+	} catch {
+		data = null;
+	}
+	if (!data || typeof data !== "object") data = {};
+	if (!res.ok || !data.text) {
+		const rawError = raw ? raw.trim() : "";
+		throw new Error(data?.error || rawError || "Couldn't generate full script.");
+	}
+	return data.text;
+}
+
 (async function init() {
 	try {
 		const sessionId = getSessionId();
@@ -69,14 +113,17 @@ async function verifyPayment(sessionId) {
 			return;
 		}
 
-		const outputText = getStoredOutput();
-		if (!outputText) {
+		const inputs = getStoredInputs();
+		if (!inputs) {
 			setStatus("Couldn't find your script text. Please go back and generate again.");
 			return;
 		}
 
 		await verifyPayment(sessionId);
-		downloadBlob(toMarkdown(outputText));
+		setStatus("Payment verified. Building your full script...");
+		const fullText = await generateFullScript(inputs, sessionId);
+		downloadBlob(toMarkdown(fullText));
+		localStorage.removeItem(LAST_INPUTS_KEY);
 		setStatus("Your download should start automatically.");
 	} catch (error) {
 		setStatus(error?.message || "Payment not verified. Please try again.");
